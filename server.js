@@ -51,3 +51,20 @@ app.post("/hotels", function(req, res) {
             }
         });
 });
+
+app.post("/customers", function(req, res) {
+    const newCustomerName = req.body.name;
+    const newCustomerAddress = req.body.address;
+    const newCustomerEmail = req.body.email;
+    const newCustomerCity=req.body.city;
+    const newCustomerPostcode=req.body.postcode;
+    const newCustomerCountry=req.body.country;
+
+    const query='INSERT INTO customers (name,email,address,city,postcode,country) VALUES ($1,$2,$3,$4,$5,$6)'
+    
+    const params=[newCustomerName, newCustomerEmail, newCustomerAddress,newCustomerCity,newCustomerPostcode,newCustomerCountry];
+
+    pool.query(query,params)
+    .then(() => res.send('Customer Created!'))
+    .catch(e=>res.status(500).send(e))
+})
