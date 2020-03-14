@@ -21,6 +21,11 @@ app.get("/hotels", function(req, res) {
         res.json(result.rows);
     });
 });
+app.get("/customers", function(req, res) {
+    pool.query('SELECT * FROM customers', (error, result) => {
+        res.json(result.rows);
+    });
+});
 
 const bodyParser = require('body-parser');
 app.use(bodyParser.json());
