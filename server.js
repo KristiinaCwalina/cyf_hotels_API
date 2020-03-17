@@ -40,7 +40,7 @@ app.get("/customers", function(req, res) {
     pool.query('SELECT * FROM customers', (error, result) => {
         res.json(result.rows);
     });
-
+});
 
 const bodyParser = require('body-parser');
 app.use(bodyParser.json());
@@ -110,19 +110,17 @@ pool.query(query, [customerId])
 .catch(e => console.error(e));
 });
 
-app.put('/customers/:customerId'), function(req,res){
+app.put("/customers/:customerId", function(req,res){
     const customerId=req.params.customerId;
     const newEmail=req.body.email;
-    
     if(!newEmail || newEmail ===""){
         return res.status(400).send('Email is required')
     }
     pool.query('UPDATE customers SET email=$1 WHERE id=$2', [newEmail,customerId])
-    
     .then(()=>res.send('Customer updated'))
     .catch(e=>console.error(e));
-    }}
-);
+    }
+  );
 
 app.delete("/customers/:customerId", function(req, res) {
     const customerId = req.params.customerId;
@@ -134,4 +132,9 @@ app.delete("/customers/:customerId", function(req, res) {
                 .catch(e => console.error(e));;
         })
         .catch(e => console.error(e));
+});
+
+app.delete("/hotels/:hotelId", function(req,res){
+    const hotelId=req.params.hotelId;
+
 });
