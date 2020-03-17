@@ -17,15 +17,30 @@ const pool = new Pool({
 });
 
 app.get("/hotels", function(req, res) {
-    pool.query('SELECT * FROM hotels', (error, result) => {
-        res.json(result.rows);
+    const hotelNameQuery=req.query.name;
+    //console.log(`query name: ${hotelNameQuery}`)
+let query = `SELECT * FROM hotels ORDER BY name`;
+if(hotelNameQuery){
+   query=`SELECT * FROM hotels WHERE name like '%${hotelNameQuery}%' ORDER BY name`}
+   pool.query(query)
+   .then(result=>res.json(result.rows))
+   .catch(e=> console.error(e));
+
     });
-});
+
+    app.get("/hotels/:hotelId", function(req, res) {
+        const hotelId = req.params.hotelId;
+    
+        pool.query("SELECT * FROM hotels WHERE id=$1", [hotelId])
+            .then(result => res.json(result.rows))
+            .catch(e => console.error(e));
+    });
+
 app.get("/customers", function(req, res) {
     pool.query('SELECT * FROM customers', (error, result) => {
         res.json(result.rows);
     });
-});
+
 
 const bodyParser = require('body-parser');
 app.use(bodyParser.json());
@@ -67,4 +82,56 @@ app.post("/customers", function(req, res) {
     pool.query(query,params)
     .then(() => res.send('Customer Created!'))
     .catch(e=>res.status(500).send(e))
-})
+});
+
+
+
+app.get("/customers", function(req, res) {
+    pool.query("SELECT * FROM customers ORDER BY name")
+        .then(result => res.json(result.rows))
+        .catch(e => console.error(e));
+});
+
+app.get("/customers/:customerId", function(req, res) {
+    const customerId = req.params.customerId;
+
+    pool.query("SELECT * FROM customers WHERE id=$1", [customerId])
+        .then(result => res.json(result.rows))
+        .catch(e => console.error(e));
+});
+
+app.get("/customers/:customerId/bookings", function(req,res){
+const customerId=req.params.customerId
+const query='select bookings.checkin_date, bookings.nights, hotels.name, hotels.postcode from bookings '+
+'join hotels on hotels.id=bookings.hotel_id where customer_id=1';
+
+pool.query(query, [customerId])
+.then(result => res.json(result.rows))
+.catch(e => console.error(e));
+});
+
+app.put('/customers/:customerId'), function(req,res){
+    const customerId=req.params.customerId;
+    const newEmail=req.body.email;
+    
+    if(!newEmail || newEmail ===""){
+        return res.status(400).send('Email is required')
+    }
+    pool.query('UPDATE customers SET email=$1 WHERE id=$2', [newEmail,customerId])
+    
+    .then(()=>res.send('Customer updated'))
+    .catch(e=>console.error(e));
+    }}
+);
+
+app.delete("/customers/:customerId", function(req, res) {
+    const customerId = req.params.customerId;
+
+    pool.query("DELETE FROM bookings WHERE customer_id=$1", [customerId])
+        .then(() => {
+            pool.query("DELETE FROM customers WHERE id=$1", [customerId])
+                .then(() => res.send(`Customer ${customerId} deleted!`))
+                .catch(e => console.error(e));;
+        })
+        .catch(e => console.error(e));
+});
